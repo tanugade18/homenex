@@ -1,4 +1,18 @@
 @import "tailwindcss";
+@import "tailwindcss";
+
+@theme {
+  --color-brand-blue: #0B4FF0;
+  --color-brand-navy: #0A2A6B;
+  --color-brand-sky: #EAF1FF;
+  --color-brand-amber: #FFA53D;
+  --color-brand-teal: #0EA5A5;
+  --color-brand-coral: #FF6B6B;
+  --color-brand-slate: #475569;
+
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+}
 
 :root {
   --background: #ffffff;

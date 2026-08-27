@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  BUYER
+  TENANT
+  OWNER
+  BROKER
+  BUILDER
+  ADMIN
+}
+
+enum PropertyType {
+  BUY
+  RENT
+  PG
+  PLOT
+  COMMERCIAL
+}
+
+enum PropertyStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+model User {
+  id          String   @id @default(cuid())
+  selfiamId   String   @unique   // selfiam se mila hua unique identity (email ya user id)
+  name        String
+  email       String   @unique
+  phone       String?
+  role        Role     @default(BUYER)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  properties  Property[]
+  leads       Lead[]
+  savedProps  SavedProperty[]
+  siteVisits  SiteVisit[]
+}
+
+model Property {
+  id           String         @id @default(cuid())
+  title        String
+  description  String
+  type         PropertyType
+  status       PropertyStatus @default(PENDING)
+  price        Int
+  bhk          Int?
+  carpetArea   Int?
+  city         String
+  locality     String
+  address      String?
+  images       String[]       // Cloudinary URLs
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  owner        User           @relation(fields: [ownerId], references: [id])
+  ownerId      String
+
+  leads        Lead[]
+  savedBy      SavedProperty[]
+  siteVisits   SiteVisit[]
+}
+
+model Lead {
+  id          String   @id @default(cuid())
+  message     String?
+  createdAt   DateTime @default(now())
+
+  property    Property @relation(fields: [propertyId], references: [id])
+  propertyId  String
+
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+}
+
+model SavedProperty {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+
+  property    Property @relation(fields: [propertyId], references: [id])
+  propertyId  String
+
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+
+  @@unique([userId, propertyId])
+}
+
+model SiteVisit {
+  id          String   @id @default(cuid())
+  scheduledAt DateTime
+  status      String   @default("REQUESTED")
+  createdAt   DateTime @default(now())
+
+  property    Property @relation(fields: [propertyId], references: [id])
+  propertyId  String
+
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+}
