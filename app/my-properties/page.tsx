@@ -1,5 +1,6 @@
 'use client'
 
+import { useUser } from '@clerk/nextjs'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -24,6 +25,10 @@ const statusConfig = {
 }
 
 export default function MyPropertiesPage() {
+  const { user } = useUser()
+  const role = user?.publicMetadata?.role as string | undefined
+  const heading = role === 'BROKER' ? 'My Listings' : 'My Properties'
+
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -41,7 +46,7 @@ export default function MyPropertiesPage() {
     <main className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-xl md:text-2xl font-bold text-brand-slate">
-          My Properties
+          {heading}
         </h1>
         <Link
           href="/post-property"

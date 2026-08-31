@@ -1,9 +1,33 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import FadeIn from './FadeIn'
 import PropertyCard from './PropertyCard'
-import { properties } from '@/lib/dummyData'
+import { properties as dummyProperties } from '@/lib/dummyData'
+
+type Property = {
+  id: number | string
+  tag: string
+  tagColor: string
+  image: string
+  price: string
+  bhk: string
+  location: string
+  area: string
+}
 
 export default function FeaturedProperties() {
-  const featured = properties.slice(0, 4)
+  const [realProperties, setRealProperties] = useState<Property[]>([])
+
+  useEffect(() => {
+    fetch('/api/properties/public')
+      .then((res) => res.json())
+      .then((data) => setRealProperties(data.properties || []))
+      .catch(() => {})
+  }, [])
+
+  // Show real listings first, fill remaining slots with dummy data, max 4 total
+  const combined = [...realProperties, ...dummyProperties].slice(0, 4)
 
   return (
     <section className="bg-brand-sky/40 py-12 md:py-16">
@@ -18,7 +42,7 @@ export default function FeaturedProperties() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {featured.map((p, i) => (
+          {combined.map((p, i) => (
             <FadeIn key={p.id} delay={i * 0.1}>
               <PropertyCard property={p} />
             </FadeIn>

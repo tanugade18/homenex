@@ -13,18 +13,33 @@ export async function POST(req: Request) {
   const { role } = await req.json()
   const client = await clerkClient()
   const user = await client.users.getUser(userId)
+  const email = user.emailAddresses[0]?.emailAddress ?? ''
 
-  // Save role in our database
-  await prisma.user.upsert({
-    where: { selfiamId: userId },
-    update: { role },
-    create: {
-      selfiamId: userId,
-      name: user.fullName ?? 'Unnamed',
-      email: user.emailAddresses[0]?.emailAddress ?? '',
-      role,
-    },
-  })
+  // Check if a user already exists with this email (from an older/different Clerk account)
+  const existingByEmail = await prisma.user.findUnique({ where: { email } })
+
+  if (existingByEmail) {
+    // Update that existing record to point to the current Clerk account + new role
+    await prisma.user.update({
+      where: { email },
+      data: {
+        selfiamId: userId,
+        role,
+        name: user.fullName ?? 'Unnamed',
+      },
+    })
+  } else {
+    await prisma.user.upsert({
+      where: { selfiamId: userId },
+      update: { role },
+      create: {
+        selfiamId: userId,
+        name: user.fullName ?? 'Unnamed',
+        email,
+        role,
+      },
+    })
+  }
 
   // Also save role in Clerk's metadata so middleware can check it quickly
   await client.users.updateUserMetadata(userId, {
