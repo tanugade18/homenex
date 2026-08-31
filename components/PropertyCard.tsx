@@ -1,10 +1,11 @@
 'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { Heart, MapPin, Maximize } from 'lucide-react'
 
 type Property = {
-  id: number
+  id: number | string
   tag: string
   tagColor: string
   image: string

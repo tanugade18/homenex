@@ -1,13 +1,39 @@
 'use client'
 
-import { useState } from 'react'
-import { properties } from '@/lib/dummyData'
+import { useState, useEffect } from 'react'
+import { properties as dummyProperties } from '@/lib/dummyData'
 import PropertyCard from '@/components/PropertyCard'
 import FilterSidebar from '@/components/FilterSidebar'
 import { SlidersHorizontal, X } from 'lucide-react'
 
+type Property = {
+  id: number | string
+  tag: string
+  tagColor: string
+  image: string
+  price: string
+  bhk: string
+  location: string
+  area: string
+}
+
 export default function SearchPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+  const [realProperties, setRealProperties] = useState<Property[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/properties/public')
+      .then((res) => res.json())
+      .then((data) => {
+        setRealProperties(data.properties || [])
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  // Real listings first, dummy ones fill the rest for now
+  const allProperties = [...realProperties, ...dummyProperties]
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-8">
@@ -16,7 +42,9 @@ export default function SearchPage() {
           <h1 className="font-display text-xl md:text-2xl font-bold text-brand-slate">
             Properties in India
           </h1>
-          <p className="text-sm text-gray-500 mt-1">{properties.length} results found</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {loading ? 'Loading...' : `${allProperties.length} results found`}
+          </p>
         </div>
         <button
           onClick={() => setMobileFiltersOpen(true)}
@@ -28,20 +56,17 @@ export default function SearchPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
-        {/* Desktop sidebar */}
         <aside className="hidden lg:block">
           <FilterSidebar />
         </aside>
 
-        {/* Property grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-          {properties.map((p) => (
+          {allProperties.map((p) => (
             <PropertyCard key={p.id} property={p} />
           ))}
         </div>
       </div>
 
-      {/* Mobile filter drawer */}
       {mobileFiltersOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
