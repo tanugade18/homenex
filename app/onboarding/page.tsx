@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-
+import { useAuth } from '@clerk/nextjs'
 const roles = [
   { id: 'BUYER', label: 'Customer', desc: 'I want to buy or rent a property' },
   { id: 'OWNER', label: 'Owner', desc: 'I want to list my property' },
@@ -13,20 +13,28 @@ export default function OnboardingPage() {
   const [selected, setSelected] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { getToken } = useAuth()
 
   const handleContinue = async () => {
-    if (!selected) return
-    setLoading(true)
+  if (!selected) return
+  setLoading(true)
+  try {
     const res = await fetch('/api/onboarding', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ role: selected }),
     })
-    setLoading(false)
     if (res.ok) {
-      router.push('/')
+      await getToken({ skipCache: true }) // force fresh token with updated role
+      window.location.href = '/' // full page reload so middleware sees the new session
+    } else {
+      setLoading(false)
     }
+  } catch (err) {
+    console.error('Onboarding failed:', err)
+    setLoading(false)
   }
+}
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">

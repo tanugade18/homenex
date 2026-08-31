@@ -1,22 +1,22 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import Image from 'next/image'
-import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
-import { Heart, Menu } from 'lucide-react'
-import { useState } from 'react'
+import Link from "next/link";
+import Image from "next/image";
+import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { Heart, Menu, Building2, Users } from "lucide-react";
+import { useState } from "react";
 
 const navLinks = [
-  { label: 'Buy', href: '/buy' },
-  { label: 'Rent', href: '/rent' },
-  { label: 'PG / Co-living', href: '/pg' },
-  { label: 'Commercial', href: '/commercial' },
-  { label: 'New Projects', href: '/new-projects' },
-  { label: 'Plots / Land', href: '/plots' },
-]
+  { label: "Buy", href: "/buy" },
+  { label: "Rent", href: "/rent" },
+  { label: "PG / Co-living", href: "/pg" },
+  { label: "Commercial", href: "/commercial" },
+  { label: "New Projects", href: "/new-projects" },
+  { label: "Plots / Land", href: "/plots" },
+];
 
 export default function Header() {
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 bg-brand-blue font-body">
@@ -54,7 +54,9 @@ export default function Header() {
 
           <Show when="signed-out">
             <SignInButton>
-              <button className="text-sm text-white/90 hover:text-white">Sign In</button>
+              <button className="text-sm text-white/90 hover:text-white">
+                Sign In
+              </button>
             </SignInButton>
             <SignUpButton>
               <button className="bg-brand-amber text-brand-blue font-semibold text-sm px-4 py-2 rounded-full hover:brightness-105 transition">
@@ -63,13 +65,35 @@ export default function Header() {
             </SignUpButton>
           </Show>
           <Show when="signed-in">
-            <button className="bg-brand-amber text-brand-blue font-semibold text-sm px-4 py-2 rounded-full hover:brightness-105 transition">
+            <Link
+              href="/my-properties"
+              className="hidden md:flex items-center gap-1.5 bg-white/10 text-white text-sm font-medium px-3.5 py-2 rounded-full hover:bg-white/20 transition"
+            >
+              <Building2 size={16} />
+              My Properties
+            </Link>
+
+            <Link
+              href="/leads"
+              className="hidden md:flex items-center gap-1.5 bg-white/10 text-white text-sm font-medium px-3.5 py-2 rounded-full hover:bg-white/20 transition"
+            >
+              <Users size={16} />
+              Leads
+            </Link>
+
+            <Link
+              href="/post-property"
+              className="bg-brand-amber text-brand-blue font-semibold text-sm px-4 py-2 rounded-full hover:brightness-105 transition"
+            >
               Post Property
-            </button>
+            </Link>
             <UserButton />
           </Show>
 
-          <button className="lg:hidden text-white" onClick={() => setMenuOpen(!menuOpen)}>
+          <button
+            className="lg:hidden text-white"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
             <Menu size={24} />
           </button>
         </div>
@@ -90,5 +114,5 @@ export default function Header() {
         </nav>
       )}
     </header>
-  )
+  );
 }

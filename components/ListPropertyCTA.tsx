@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Building2 } from 'lucide-react'
 import FadeIn from './FadeIn'
 
@@ -20,9 +21,12 @@ export default function ListPropertyCTA() {
             </p>
           </div>
 
-          <button className="relative shrink-0 bg-brand-amber text-brand-navy font-semibold px-6 py-3 rounded-xl hover:brightness-105 transition">
+          <Link
+            href="/post-property"
+            className="relative shrink-0 bg-brand-amber text-brand-navy font-semibold px-6 py-3 rounded-xl hover:brightness-105 transition"
+          >
             Post Property Now
-          </button>
+          </Link>
         </div>
       </FadeIn>
     </section>

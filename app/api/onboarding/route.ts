@@ -1,4 +1,4 @@
-import { auth, currentUser } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
@@ -11,12 +11,10 @@ export async function POST(req: Request) {
   }
 
   const { role } = await req.json()
-  const user = await currentUser()
+  const client = await clerkClient()
+  const user = await client.users.getUser(userId)
 
-  if (!user) {
-    return NextResponse.json({ error: 'User not found' }, { status: 404 })
-  }
-
+  // Save role in our database
   await prisma.user.upsert({
     where: { selfiamId: userId },
     update: { role },
@@ -26,6 +24,11 @@ export async function POST(req: Request) {
       email: user.emailAddresses[0]?.emailAddress ?? '',
       role,
     },
+  })
+
+  // Also save role in Clerk's metadata so middleware can check it quickly
+  await client.users.updateUserMetadata(userId, {
+    publicMetadata: { role, onboarded: true },
   })
 
   return NextResponse.json({ success: true })
