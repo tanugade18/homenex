@@ -113,3 +113,12 @@ model SiteVisit {
   user        User     @relation(fields: [userId], references: [id])
   userId      String
 }
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  message     String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}

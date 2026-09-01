@@ -4,7 +4,7 @@ import { useUser } from '@clerk/nextjs'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { MapPin, Plus, Clock, CheckCircle2, XCircle } from 'lucide-react'
+import { MapPin, Plus, Clock, CheckCircle2, XCircle, Pencil, Check, X } from 'lucide-react'
 
 type Property = {
   id: string
@@ -31,6 +31,8 @@ export default function MyPropertiesPage() {
 
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editPrice, setEditPrice] = useState('')
 
   useEffect(() => {
     fetch('/api/properties')
@@ -41,6 +43,39 @@ export default function MyPropertiesPage() {
       })
       .catch(() => setLoading(false))
   }, [])
+
+  const startEdit = (e: React.MouseEvent, p: Property) => {
+    e.preventDefault()
+    setEditingId(p.id)
+    setEditPrice(String(p.price))
+  }
+
+  const cancelEdit = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setEditingId(null)
+  }
+
+  const savePrice = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault()
+    const newPrice = Number(editPrice)
+    if (!newPrice || newPrice <= 0) return
+
+    try {
+      const res = await fetch(`/api/properties/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ price: newPrice }),
+      })
+      if (res.ok) {
+        setProperties((prev) =>
+          prev.map((p) => (p.id === id ? { ...p, price: newPrice } : p))
+        )
+        setEditingId(null)
+      }
+    } catch (err) {
+      console.error('Failed to update price:', err)
+    }
+  }
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-8">
@@ -75,6 +110,8 @@ export default function MyPropertiesPage() {
         {properties.map((p) => {
           const status = statusConfig[p.status]
           const StatusIcon = status.icon
+          const isEditing = editingId === p.id
+
           return (
             <Link
               key={p.id}
@@ -105,7 +142,31 @@ export default function MyPropertiesPage() {
                     {status.label}
                   </span>
                 </div>
-                <div className="text-brand-blue font-bold mt-1">₹{p.price.toLocaleString('en-IN')}</div>
+
+                {isEditing ? (
+                  <div className="flex items-center gap-2 mt-1" onClick={(e) => e.preventDefault()}>
+                    <input
+                      type="number"
+                      value={editPrice}
+                      onChange={(e) => setEditPrice(e.target.value)}
+                      className="border border-gray-200 rounded-lg px-2 py-1 text-sm w-32 outline-none focus:border-brand-blue"
+                    />
+                    <button onClick={(e) => savePrice(e, p.id)} className="text-brand-teal">
+                      <Check size={18} />
+                    </button>
+                    <button onClick={cancelEdit} className="text-gray-400">
+                      <X size={18} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-brand-blue font-bold">₹{p.price.toLocaleString('en-IN')}</span>
+                    <button onClick={(e) => startEdit(e, p)} className="text-gray-400 hover:text-brand-blue">
+                      <Pencil size={14} />
+                    </button>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-1 text-sm text-gray-400 mt-1">
                   <MapPin size={14} />
                   {p.locality}, {p.city}

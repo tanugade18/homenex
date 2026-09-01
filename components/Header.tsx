@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useUser, Show, UserButton } from "@clerk/nextjs";
 import { Heart, Menu, Building2, Users, User, Calendar, X } from "lucide-react";
 import { useState } from "react";
-
+import NotificationsBell from './NotificationsBell'
 const navLinks = [
   { label: "Buy", href: "/buy" },
   { label: "Rent", href: "/rent" },
@@ -43,6 +43,8 @@ export default function Header() {
               <Heart size={18} />
               Saved
             </Link>
+
+              <NotificationsBell />
 
             <Show when="signed-out">
               <Link
