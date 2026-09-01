@@ -24,6 +24,7 @@ type DisplayProperty = {
   location: string;
   area: string;
   description?: string;
+  ownerPhone?: string | null;
 };
 
 export default function PropertyDetailsPage() {
@@ -44,7 +45,6 @@ export default function PropertyDetailsPage() {
   const [visitConfirmed, setVisitConfirmed] = useState(false);
 
   useEffect(() => {
-    // If it's a plain number, treat it as dummy data (from homepage/search demo cards)
     if (/^\d+$/.test(rawId)) {
       const dummy = dummyProperties.find((p) => p.id === Number(rawId));
       if (dummy) {
@@ -65,7 +65,6 @@ export default function PropertyDetailsPage() {
       return;
     }
 
-    // Otherwise, it's a real database ID — fetch from API
     fetch(`/api/properties/${rawId}`)
       .then((res) => {
         if (!res.ok) throw new Error("Not found");
@@ -86,6 +85,7 @@ export default function PropertyDetailsPage() {
           location: `${p.locality}, ${p.city}`,
           area: p.carpetArea ? `${p.carpetArea} sq.ft` : "—",
           description: p.description,
+          ownerPhone: p.owner?.phone,
         });
         setLoading(false);
       })
@@ -219,10 +219,25 @@ export default function PropertyDetailsPage() {
             {error && (
               <p className="text-xs text-brand-coral text-center">{error}</p>
             )}
-            <button className="w-full border border-brand-blue text-brand-blue font-semibold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-brand-sky transition">
-              <MessageCircle size={18} />
-              Chat Now
-            </button>
+
+            {property.ownerPhone ? (
+  <a
+    href={`https://wa.me/91${property.ownerPhone.replace(/\D/g, "")}?text=${encodeURIComponent(
+      `Hi, I'm interested in your property "${property.bhk}" listed at ${property.price} in ${property.location} on HomeNex.`
+    )}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="w-full border border-brand-blue text-brand-blue font-semibold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-brand-sky transition"
+  >
+    <MessageCircle size={18} />
+    Chat on WhatsApp
+  </a>
+) : (
+  <div className="w-full border border-gray-200 text-gray-400 font-semibold py-3 rounded-xl flex items-center justify-center gap-2 text-sm">
+    <MessageCircle size={18} />
+    Owner hasn&apos;t added a phone number yet
+  </div>
+)}
           </div>
         </div>
       </div>
