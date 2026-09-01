@@ -32,20 +32,25 @@ enum PropertyStatus {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  selfiamId   String   @unique   // selfiam se mila hua unique identity (email ya user id)
-  name        String
-  email       String   @unique
-  phone       String?
-  role        Role     @default(BUYER)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  selfiamId      String   @unique
+  name           String
+  email          String   @unique
+  phone          String?
+  role           Role     @default(BUYER)
+  experience     Int?
+  specialization String?
+  areasCovered   String?
+  bio            String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   properties  Property[]
   leads       Lead[]
   savedProps  SavedProperty[]
   siteVisits  SiteVisit[]
 }
+
 
 model Property {
   id           String         @id @default(cuid())

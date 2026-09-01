@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
-import { Heart, Menu, Building2, Users } from "lucide-react";
+import { useUser, Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { Heart, Menu, Building2, Users, User, Calendar } from "lucide-react";
 import { useState } from "react";
 
 const navLinks = [
@@ -17,6 +17,8 @@ const navLinks = [
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user } = useUser();
+  const role = user?.publicMetadata?.role as string | undefined;
 
   return (
     <header className="sticky top-0 z-50 bg-brand-blue font-body">
@@ -80,6 +82,24 @@ export default function Header() {
               <Users size={16} />
               Leads
             </Link>
+
+            <Link
+  href="/site-visits"
+  className="hidden md:flex items-center gap-1.5 bg-white/10 text-white text-sm font-medium px-3.5 py-2 rounded-full hover:bg-white/20 transition"
+>
+  <Calendar size={16} />
+  Visits
+</Link>
+
+            {role === "BROKER" && (
+              <Link
+                href="/broker-profile"
+                className="hidden md:flex items-center gap-1.5 bg-white/10 text-white text-sm font-medium px-3.5 py-2 rounded-full hover:bg-white/20 transition"
+              >
+                <User size={16} />
+                Profile
+              </Link>
+            )}
 
             <Link
               href="/post-property"
