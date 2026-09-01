@@ -1,7 +1,9 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useUser } from '@clerk/nextjs'
 import { Heart, MapPin, Maximize } from 'lucide-react'
 
 type Property = {
@@ -16,6 +18,33 @@ type Property = {
 }
 
 export default function PropertyCard({ property }: { property: Property }) {
+  const { isSignedIn } = useUser()
+  const [saved, setSaved] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  const isRealProperty = typeof property.id === 'string'
+
+  const handleToggleSave = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!isSignedIn || !isRealProperty || loading) return
+    setLoading(true)
+    try {
+      const res = await fetch('/api/saved', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ propertyId: property.id }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setSaved(data.saved)
+      }
+    } catch (err) {
+      console.error('Failed to toggle save:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <Link href={`/property/${property.id}`}>
       <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition group h-full">
@@ -31,10 +60,10 @@ export default function PropertyCard({ property }: { property: Property }) {
             {property.tag}
           </span>
           <button
-            onClick={(e) => e.preventDefault()}
+            onClick={handleToggleSave}
             className="absolute top-3 right-3 bg-white/90 rounded-full p-1.5 hover:bg-white"
           >
-            <Heart size={16} className="text-brand-coral" />
+            <Heart size={16} className={saved ? 'text-brand-coral fill-brand-coral' : 'text-brand-coral'} />
           </button>
         </div>
 

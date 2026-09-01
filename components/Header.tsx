@@ -2,11 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import {
-  useUser,
-  Show,
-  UserButton,
-} from "@clerk/nextjs";
+import { useUser, Show, UserButton } from "@clerk/nextjs";
 import { Heart, Menu, Building2, Users, User, Calendar, X } from "lucide-react";
 import { useState } from "react";
 
@@ -40,10 +36,13 @@ export default function Header() {
           </Link>
 
           <div className="flex items-center gap-2 md:gap-3">
-            <button className="hidden lg:flex items-center gap-1 text-white/85 hover:text-white text-sm">
+            <Link
+              href="/saved"
+              className="hidden lg:flex items-center gap-1 text-white/85 hover:text-white text-sm"
+            >
               <Heart size={18} />
               Saved
-            </button>
+            </Link>
 
             <Show when="signed-out">
               <Link
