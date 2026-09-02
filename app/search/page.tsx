@@ -39,9 +39,10 @@ const categoryToType: Record<string, string> = {
 }
 
 export default function SearchPage() {
+
   const searchParams = useSearchParams()
   const category = searchParams.get('type')
-
+  const query = searchParams.get('q')?.toLowerCase() || ''
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const [realProperties, setRealProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
@@ -71,6 +72,12 @@ export default function SearchPage() {
 
   const filteredProperties = useMemo(() => {
     return allProperties.filter((p) => {
+      // Keyword search — match against bhk/type text and location
+      if (query) {
+        const searchable = `${p.bhk} ${p.location} ${p.rawType || ''}`.toLowerCase()
+        if (!searchable.includes(query)) return false
+      }
+
       if (filters.type.length > 0 && !filters.type.includes(p.rawType || '')) {
         return false
       }
@@ -92,7 +99,7 @@ export default function SearchPage() {
       }
       return true
     })
-  }, [allProperties, filters])
+  }, [allProperties, filters, query])
 
   const heading = category && categoryTitles[category] ? categoryTitles[category] : 'Properties in India'
 

@@ -99,6 +99,7 @@ const tabs = [
 
 export default function Hero() {
   const [activeTab, setActiveTab] = useState('buy')
+  const [searchQuery, setSearchQuery] = useState('')
   const [city, setCity] = useState('All Cities')
   const [cityOpen, setCityOpen] = useState(false)
 
@@ -249,6 +250,8 @@ export default function Hero() {
               <input
                 key={currentTab.id}
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={currentTab.placeholder}
                 className="text-sm text-gray-700 placeholder:text-gray-400 outline-none w-full bg-transparent"
               />
@@ -296,7 +299,7 @@ export default function Hero() {
 
             {/* Search Button */}
             <Link
-              href="/search"
+              href={`/search?q=${encodeURIComponent(searchQuery)}&type=${activeTab}`}
               className="shrink-0 whitespace-nowrap bg-brand-amber text-brand-navy font-semibold text-sm px-6 py-2.5 rounded-xl hover:brightness-105 transition flex items-center justify-center"
             >
               Search

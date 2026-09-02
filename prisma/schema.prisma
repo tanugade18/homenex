@@ -49,6 +49,7 @@ model User {
   leads       Lead[]
   savedProps  SavedProperty[]
   siteVisits  SiteVisit[]
+  serviceRequests ServiceRequest[]
 }
 
 
@@ -121,4 +122,28 @@ model Notification {
   message     String
   read        Boolean  @default(false)
   createdAt   DateTime @default(now())
+}
+
+enum ServiceType {
+  PACKERS_MOVERS
+  CLEANING
+  PAINTING
+  INTERIOR_DESIGN
+  ELECTRICAL
+  PLUMBING
+  PEST_CONTROL
+  PROPERTY_INSPECTION
+}
+
+model ServiceRequest {
+  id          String      @id @default(cuid())
+  serviceType ServiceType
+  city        String
+  phone       String
+  notes       String?
+  status      String      @default("PENDING")
+  createdAt   DateTime    @default(now())
+
+  user        User        @relation(fields: [userId], references: [id])
+  userId      String
 }
