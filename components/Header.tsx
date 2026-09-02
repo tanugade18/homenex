@@ -7,12 +7,12 @@ import { Heart, Menu, Building2, Users, User, Calendar, X } from "lucide-react";
 import { useState } from "react";
 import NotificationsBell from './NotificationsBell'
 const navLinks = [
-  { label: "Buy", href: "/buy" },
-  { label: "Rent", href: "/rent" },
-  { label: "PG / Co-living", href: "/pg" },
-  { label: "Commercial", href: "/commercial" },
-  { label: "New Projects", href: "/new-projects" },
-  { label: "Plots / Land", href: "/plots" },
+  { label: "Buy", href: "/search?type=buy" },
+  { label: "Rent", href: "/search?type=rent" },
+  { label: "PG / Co-living", href: "/search?type=pg" },
+  { label: "Commercial", href: "/search?type=commercial" },
+  { label: "New Projects", href: "/search?type=new-projects" },
+  { label: "Plots / Land", href: "/search?type=plots" },
 ];
 
 export default function Header() {

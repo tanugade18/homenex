@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { properties as dummyProperties } from '@/lib/dummyData'
 import PropertyCard from '@/components/PropertyCard'
-import FilterSidebar from '@/components/FilterSidebar'
+import FilterSidebar, { Filters } from '@/components/FilterSidebar'
 import { SlidersHorizontal, X } from 'lucide-react'
 
 type Property = {
@@ -15,12 +16,36 @@ type Property = {
   bhk: string
   location: string
   area: string
+  rawType?: string
+  rawBhk?: number | null
+  rawPrice?: number
+}
+
+const categoryTitles: Record<string, string> = {
+  buy: 'Properties for Sale',
+  rent: 'Properties for Rent',
+  pg: 'PG / Co-living Spaces',
+  commercial: 'Commercial Properties',
+  'new-projects': 'New Projects',
+  plots: 'Plots & Land',
+}
+
+const categoryToType: Record<string, string> = {
+  buy: 'BUY',
+  rent: 'RENT',
+  pg: 'PG',
+  commercial: 'COMMERCIAL',
+  plots: 'PLOT',
 }
 
 export default function SearchPage() {
+  const searchParams = useSearchParams()
+  const category = searchParams.get('type')
+
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const [realProperties, setRealProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
+  const [filters, setFilters] = useState<Filters>({ type: [], bhk: [], budget: [] })
 
   useEffect(() => {
     fetch('/api/properties/public')
@@ -32,18 +57,54 @@ export default function SearchPage() {
       .catch(() => setLoading(false))
   }, [])
 
-  // Real listings first, dummy ones fill the rest for now
-  const allProperties = [...realProperties, ...dummyProperties]
+  // If arriving from a header category link, pre-set the type filter
+  useEffect(() => {
+    if (category && categoryToType[category]) {
+      setFilters((prev) => ({ ...prev, type: [categoryToType[category]] }))
+    }
+  }, [category])
+
+  const allProperties = useMemo(
+    () => [...realProperties, ...dummyProperties],
+    [realProperties]
+  )
+
+  const filteredProperties = useMemo(() => {
+    return allProperties.filter((p) => {
+      if (filters.type.length > 0 && !filters.type.includes(p.rawType || '')) {
+        return false
+      }
+      if (filters.bhk.length > 0) {
+        const bhk = p.rawBhk || 0
+        const matchesBhk = filters.bhk.some((b) => {
+          if (b === '4') return bhk >= 4
+          return bhk === Number(b)
+        })
+        if (!matchesBhk) return false
+      }
+      if (filters.budget.length > 0) {
+        const price = p.rawPrice || 0
+        const matchesBudget = filters.budget.some((range) => {
+          const [min, max] = range.split('-').map(Number)
+          return price >= min && price <= max
+        })
+        if (!matchesBudget) return false
+      }
+      return true
+    })
+  }, [allProperties, filters])
+
+  const heading = category && categoryTitles[category] ? categoryTitles[category] : 'Properties in India'
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-display text-xl md:text-2xl font-bold text-brand-slate">
-            Properties in India
+            {heading}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            {loading ? 'Loading...' : `${allProperties.length} results found`}
+            {loading ? 'Loading...' : `${filteredProperties.length} results found`}
           </p>
         </div>
         <button
@@ -57,13 +118,21 @@ export default function SearchPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
         <aside className="hidden lg:block">
-          <FilterSidebar />
+          <FilterSidebar filters={filters} onChange={setFilters} />
         </aside>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-          {allProperties.map((p) => (
-            <PropertyCard key={p.id} property={p} />
-          ))}
+        <div>
+          {filteredProperties.length === 0 && !loading ? (
+            <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center text-gray-500">
+              No properties match these filters. Try adjusting your search.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+              {filteredProperties.map((p) => (
+                <PropertyCard key={p.id} property={p} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -80,7 +149,7 @@ export default function SearchPage() {
                 <X size={20} className="text-gray-500" />
               </button>
             </div>
-            <FilterSidebar />
+            <FilterSidebar filters={filters} onChange={setFilters} />
           </div>
         </div>
       )}
