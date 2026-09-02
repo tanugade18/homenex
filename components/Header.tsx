@@ -15,6 +15,7 @@ const navLinks = [
   { label: "New Projects", href: "/search?type=new-projects" },
   { label: "Plots / Land", href: "/search?type=plots" },
   { label: "Services", href: "/services" },
+  { label: "Agreement", href: "/agreement" },
 ];
 
 export default function Header() {
