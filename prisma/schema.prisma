@@ -77,15 +77,27 @@ model Property {
   siteVisits   SiteVisit[]
 }
 
-model Lead {
-  id          String   @id @default(cuid())
-  message     String?
-  createdAt   DateTime @default(now())
+enum LeadStatus {
+  NEW
+  CONTACTED
+  VISIT_SCHEDULED
+  NEGOTIATION
+  CLOSED
+  LOST
+}
 
-  property    Property @relation(fields: [propertyId], references: [id])
+model Lead {
+  id          String     @id @default(cuid())
+  message     String?
+  status      LeadStatus @default(NEW)
+  notes       String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now()) @updatedAt
+
+  property    Property   @relation(fields: [propertyId], references: [id])
   propertyId  String
 
-  user        User     @relation(fields: [userId], references: [id])
+  user        User       @relation(fields: [userId], references: [id])
   userId      String
 }
 

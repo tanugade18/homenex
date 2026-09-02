@@ -7,24 +7,60 @@ import { MapPin, Mail, Phone, Clock } from 'lucide-react'
 type Lead = {
   id: string
   message: string | null
+  status: string
+  notes: string | null
   createdAt: string
   property: { id: string; title: string; price: number; city: string; locality: string }
   user: { name: string; email: string; phone: string | null }
 }
 
+const statusOptions = ['NEW', 'CONTACTED', 'VISIT_SCHEDULED', 'NEGOTIATION', 'CLOSED', 'LOST']
+
+const statusColors: Record<string, string> = {
+  NEW: 'bg-brand-sky text-brand-blue',
+  CONTACTED: 'bg-amber-50 text-brand-amber',
+  VISIT_SCHEDULED: 'bg-purple-50 text-purple-600',
+  NEGOTIATION: 'bg-orange-50 text-orange-600',
+  CLOSED: 'bg-teal-50 text-brand-teal',
+  LOST: 'bg-red-50 text-brand-coral',
+}
+
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
+  const [notesDraft, setNotesDraft] = useState<Record<string, string>>({})
 
   useEffect(() => {
     fetch('/api/leads')
       .then((res) => res.json())
       .then((data) => {
         setLeads(data.leads || [])
+        const drafts: Record<string, string> = {}
+        ;(data.leads || []).forEach((l: Lead) => {
+          drafts[l.id] = l.notes || ''
+        })
+        setNotesDraft(drafts)
         setLoading(false)
       })
       .catch(() => setLoading(false))
   }, [])
+
+  const updateLead = async (id: string, data: { status?: string; notes?: string }) => {
+    try {
+      const res = await fetch(`/api/leads/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      if (res.ok) {
+        setLeads((prev) =>
+          prev.map((l) => (l.id === id ? { ...l, ...data } : l))
+        )
+      }
+    } catch (err) {
+      console.error('Failed to update lead:', err)
+    }
+  }
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-8">
@@ -83,6 +119,49 @@ export default function LeadsPage() {
                 &quot;{lead.message}&quot;
               </p>
             )}
+
+            {/* Status + Notes management */}
+            <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">Status</label>
+                <div className="flex flex-wrap gap-2">
+                  {statusOptions.map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => updateLead(lead.id, { status: opt })}
+                      className={`text-xs font-medium px-2.5 py-1 rounded-full transition ${
+                        lead.status === opt
+                          ? statusColors[opt]
+                          : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                      }`}
+                    >
+                      {opt.replace('_', ' ')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">Notes</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={notesDraft[lead.id] ?? ''}
+                    onChange={(e) =>
+                      setNotesDraft((prev) => ({ ...prev, [lead.id]: e.target.value }))
+                    }
+                    placeholder="Add a follow-up note..."
+                    className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-brand-blue"
+                  />
+                  <button
+                    onClick={() => updateLead(lead.id, { notes: notesDraft[lead.id] })}
+                    className="text-xs font-medium bg-brand-blue text-white px-3 py-1.5 rounded-lg"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         ))}
       </div>
