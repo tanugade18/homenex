@@ -50,6 +50,9 @@ model User {
   savedProps  SavedProperty[]
   siteVisits  SiteVisit[]
   serviceRequests ServiceRequest[]
+
+  roomServiceRequests RoomServiceRequest[]
+  designRequests      DesignRequest[]
 }
 
 
@@ -158,4 +161,64 @@ model ServiceRequest {
 
   user        User        @relation(fields: [userId], references: [id])
   userId      String
+}
+
+enum ServiceCategory {
+  CLEANING_HOUSEKEEPING
+  ON_DEMAND_REPAIR
+  CONCIERGE_LIFESTYLE
+}
+
+enum ServiceRequestStatus {
+  RECEIVED
+  ASSIGNED
+  ON_THE_WAY
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model RoomServiceRequest {
+  id              String                @id @default(cuid())
+  category        ServiceCategory
+  subService      String                // e.g. "Electrical", "Deep Cleaning"
+  status          ServiceRequestStatus  @default(RECEIVED)
+  scheduledDate   DateTime?
+  address         String
+  notes           String?
+
+  // Technician fields — nullable for now, filled in once real vendor network exists
+  technicianName  String?
+  technicianPhone String?
+  technicianPhoto String?
+  technicianRating Float?
+
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @default(now()) @updatedAt
+
+  user            User                  @relation(fields: [userId], references: [id])
+  userId          String
+}
+
+enum FurnishingLevel {
+  UNFURNISHED
+  SEMI_FURNISHED
+  FULLY_FURNISHED
+}
+
+model DesignRequest {
+  id                String          @id @default(cuid())
+  propertyId        String?
+  furnishingLevel   FurnishingLevel
+  addOns            String[]        // e.g. ["Modular Kitchen", "Smart Home"]
+  interiorStyle     String?         // e.g. "Minimalist"
+  baseCost          Int
+  addOnCost         Int             @default(0)
+  totalMonthlyCost  Int
+  status            String          @default("DRAFT") // DRAFT, CONFIRMED, CANCELLED
+
+  createdAt         DateTime        @default(now())
+
+  user              User            @relation(fields: [userId], references: [id])
+  userId            String
 }

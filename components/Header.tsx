@@ -14,7 +14,7 @@ const navLinks = [
   { label: "Commercial", href: "/search?type=commercial" },
   { label: "New Projects", href: "/search?type=new-projects" },
   { label: "Plots / Land", href: "/search?type=plots" },
-  { label: "Services", href: "/services" },
+  { label: "Room Service", href: "/room-service" },
   { label: "Agreement", href: "/agreement" },
 ];
 
